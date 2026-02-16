@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useGames } from '../hooks/useGames';
 import OrderForm from './OrderForm';
+import Navbar from './Navbar';
 
 const LandingPage = () => {
   const { games, loading, error } = useGames();
@@ -21,15 +22,8 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
-      <header className="bg-[#F97316] text-white py-6 px-4 md:px-8">
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-3xl md:text-4xl font-bold">iJerdTopup</h1>
-          <p className="text-orange-100 mt-2 text-sm md:text-base">
-            Top up your favorite games instantly
-          </p>
-        </div>
-      </header>
+      {/* Navbar */}
+      <Navbar />
 
       {/* Hero Section */}
       <section className="bg-[#F97316] text-white py-16 px-4 md:px-8">

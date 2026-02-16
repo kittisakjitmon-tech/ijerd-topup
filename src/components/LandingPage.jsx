@@ -1,7 +1,23 @@
+import { useState } from 'react';
 import { useGames } from '../hooks/useGames';
+import OrderForm from './OrderForm';
 
 const LandingPage = () => {
   const { games, loading, error } = useGames();
+  const [selectedGame, setSelectedGame] = useState(null);
+
+  const handleGameClick = (game) => {
+    setSelectedGame(game);
+  };
+
+  const handleCloseOrderForm = () => {
+    setSelectedGame(null);
+  };
+
+  const handleOrderSuccess = (order) => {
+    console.log('Order created successfully:', order);
+    // You can add additional logic here, like showing a toast notification
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -66,12 +82,15 @@ const LandingPage = () => {
                   key={game.id}
                   className="bg-white border-2 border-gray-200 rounded-lg overflow-hidden hover:border-[#F97316] transition-all duration-300 hover:shadow-lg"
                 >
-                  {game.image && (
+                  {(game.imageUrl || game.image) && (
                     <div className="aspect-video bg-gray-100 overflow-hidden">
                       <img
-                        src={game.image}
+                        src={game.imageUrl || game.image}
                         alt={game.name}
                         className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                        }}
                       />
                     </div>
                   )}
@@ -84,16 +103,19 @@ const LandingPage = () => {
                         {game.description}
                       </p>
                     )}
-                    {game.price && (
-                      <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between">
+                      {game.price && (
                         <span className="text-[#F97316] font-bold text-lg">
                           ${game.price}
                         </span>
-                        <button className="bg-[#F97316] text-white px-4 py-2 rounded-md hover:bg-[#EA580C] transition-colors duration-200 font-medium">
-                          Top Up
-                        </button>
-                      </div>
-                    )}
+                      )}
+                      <button 
+                        onClick={() => handleGameClick(game)}
+                        className="bg-[#F97316] text-white px-4 py-2 rounded-md hover:bg-[#EA580C] transition-colors duration-200 font-medium"
+                      >
+                        Top Up
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -113,6 +135,15 @@ const LandingPage = () => {
           </p>
         </div>
       </footer>
+
+      {/* Order Form Modal */}
+      {selectedGame && (
+        <OrderForm
+          game={selectedGame}
+          onClose={handleCloseOrderForm}
+          onSuccess={handleOrderSuccess}
+        />
+      )}
     </div>
   );
 };

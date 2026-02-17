@@ -3,6 +3,8 @@ import { useGames } from '../hooks/useGames';
 import OrderForm from '../components/OrderForm';
 import GameCard from '../components/GameCard';
 import Navbar from '../components/Navbar';
+import HeroSection from '../components/HeroSection';
+import Footer from '../components/Footer';
 
 const LandingPage = () => {
   const { games, loading, error } = useGames();
@@ -23,22 +25,12 @@ const LandingPage = () => {
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
+      <HeroSection />
 
-      <section className="bg-[#F97316] text-white py-16 px-4 md:px-8">
-        <div className="max-w-7xl mx-auto text-center">
-          <h2 className="text-4xl md:text-6xl font-bold mb-4">
-            Game Top-Up Made Easy
-          </h2>
-          <p className="text-xl md:text-2xl text-orange-100 max-w-2xl mx-auto">
-            Fast, secure, and reliable game credits for your favorite titles
-          </p>
-        </div>
-      </section>
-
-      <section className="py-12 px-4 md:px-8">
+      <section id="games" className="py-12 px-4 md:px-8 scroll-mt-20">
         <div className="max-w-7xl mx-auto">
           <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8 text-center">
-            Available Games
+            เกมที่รองรับ
           </h3>
 
           {loading && (
@@ -80,16 +72,18 @@ const LandingPage = () => {
         </div>
       </section>
 
-      <footer className="bg-gray-50 border-t border-gray-200 py-8 px-4 md:px-8 mt-16">
+      <section id="promotions" className="py-12 px-4 md:px-8 bg-gray-50 scroll-mt-20">
         <div className="max-w-7xl mx-auto text-center">
-          <p className="text-gray-600 mb-2">
-            <span className="font-bold text-[#F97316]">iJerdTopup</span> - Your trusted game top-up partner
-          </p>
-          <p className="text-gray-500 text-sm">
-            © 2026 iJerdTopup. All rights reserved.
+          <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
+            โปรโมชั่น
+          </h3>
+          <p className="text-gray-600 max-w-xl mx-auto">
+            ติดตามโปรโมชั่นและส่วนลดได้ที่ Facebook และ Line ของเรา
           </p>
         </div>
-      </footer>
+      </section>
+
+      <Footer />
 
       {selectedGame && (
         <OrderForm

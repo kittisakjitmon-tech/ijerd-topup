@@ -1,7 +1,12 @@
+/**
+ * Navbar – sticky, gradient ส้ม, โลโก้ + iJerd TOPUP, เมนู (Home, Games, Promotions, Contact)
+ * รองรับ Auth + Cart badge; mobile first
+ */
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import logoImg from '@/assets/logo.png';
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -10,20 +15,19 @@ const Navbar = () => {
   const { user, loading, logout } = useAuth();
   const { totalItems } = useCart();
 
-  const menuItems = [
-    { name: 'หน้าแรก', path: '/' },
-    { name: 'ตะกร้า', path: '/cart' },
-    { name: 'ชำระเงิน', path: '/checkout' },
-    { name: 'โปรไฟล์', path: '/profile' },
+  // เมนูหลัก (Home, Games, Promotions, Contact) + ระบบเดิม (ตะกร้า, โปรไฟล์, ล็อกอิน)
+  const mainMenu = [
+    { name: 'Home', path: '/' },
+    { name: 'Games', path: '/#games' },
+    { name: 'Promotions', path: '/#promotions' },
+    { name: 'Contact', path: '/#contact' },
   ];
 
-  const isActive = (path) => location.pathname === path;
+  const isActive = (path) => location.pathname === path || (path === '/' && location.pathname === '/');
 
   const linkClass = (path) =>
-    `px-4 py-2 rounded-lg text-sm lg:text-base font-medium transition-colors duration-200 ${
-      isActive(path)
-        ? 'text-[#F97316] bg-orange-50'
-        : 'text-gray-700 hover:text-[#F97316] hover:bg-orange-50'
+    `px-3 py-2 rounded-lg text-sm lg:text-base font-medium transition-colors duration-200 ${
+      isActive(path) ? 'text-white bg-white/20' : 'text-white/95 hover:bg-white/15'
     }`;
 
   const handleLogout = async () => {
@@ -33,67 +37,73 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-white shadow-[0_2px_8px_rgba(249,115,22,0.1)] sticky top-0 z-50">
+    <nav className="sticky top-0 z-50 bg-gradient-to-r from-[#F97316] to-orange-500 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
+          {/* Logo + Brand */}
           <Link
             to="/"
-            className="flex items-center"
+            className="flex items-center gap-2 md:gap-3"
             onClick={() => setMobileMenuOpen(false)}
           >
-            <span className="text-2xl md:text-3xl font-bold">
-              <span className="text-[#F97316]">iJerd</span>
-              <span className="text-black">Topup</span>
+            <img
+              src={logoImg}
+              alt="iJerd TOPUP"
+              className="h-10 w-10 md:h-16 md:w-16 object-contain flex-shrink-0"
+            />
+            <span className="text-[#F97316] font-bold text-lg md:text-2xl drop-shadow-sm">
+              iJerd TOPUP
             </span>
           </Link>
 
+          {/* Desktop: เมนูหลัก + Cart + Auth */}
           <div className="hidden md:flex items-center gap-1 lg:gap-2">
-            {menuItems.map((item) => (
+            {mainMenu.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
-                className={`${linkClass(item.path)} ${item.path === '/cart' ? 'relative' : ''}`}
+                className={linkClass(item.path)}
               >
                 {item.name}
-                {item.path === '/cart' && totalItems > 0 && (
-                  <span className="absolute -top-1 -right-1 min-w-[1.25rem] h-5 px-1 flex items-center justify-center bg-[#F97316] text-white text-xs font-bold rounded-full">
-                    {totalItems > 99 ? '99+' : totalItems}
-                  </span>
-                )}
               </Link>
             ))}
+            <Link
+              to="/cart"
+              className={`${linkClass('/cart')} relative`}
+            >
+              ตะกร้า
+              {totalItems > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[1.25rem] h-5 px-1 flex items-center justify-center bg-white text-[#F97316] text-xs font-bold rounded-full">
+                  {totalItems > 99 ? '99+' : totalItems}
+                </span>
+              )}
+            </Link>
           </div>
 
           <div className="hidden md:flex items-center gap-2">
             {loading ? (
-              <span className="text-gray-400 text-sm">กำลังโหลด...</span>
+              <span className="text-white/70 text-sm">กำลังโหลด...</span>
             ) : user ? (
               <>
-                <Link
-                  to="/profile"
-                  className={linkClass('/profile')}
-                >
+                <Link to="/profile" className={linkClass('/profile')}>
                   โปรไฟล์
                 </Link>
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="px-5 py-2 rounded-lg font-semibold text-sm lg:text-base text-gray-700 hover:text-red-600 hover:bg-red-50 transition-colors duration-200"
+                  className="px-4 py-2 rounded-lg text-sm font-semibold text-white/95 hover:bg-white/15 transition-colors"
                 >
                   ออกจากระบบ
                 </button>
               </>
             ) : (
               <>
-                <Link
-                  to="/login"
-                  className="px-5 py-2 rounded-lg font-semibold text-sm lg:text-base text-gray-700 hover:text-[#F97316] hover:bg-orange-50 transition-colors duration-200"
-                >
+                <Link to="/login" className={linkClass('/login')}>
                   เข้าสู่ระบบ
                 </Link>
                 <Link
                   to="/register"
-                  className="bg-[#F97316] text-white px-5 py-2 rounded-lg font-semibold text-sm lg:text-base hover:bg-[#EA580C] transition-colors duration-200 shadow-md hover:shadow-lg"
+                  className="bg-white text-[#F97316] px-4 py-2 rounded-lg font-semibold text-sm hover:bg-white/90 transition-colors shadow"
                 >
                   สมัครสมาชิก
                 </Link>
@@ -101,11 +111,12 @@ const Navbar = () => {
             )}
           </div>
 
+          {/* Mobile menu button */}
           <button
             type="button"
             onClick={() => setMobileMenuOpen((o) => !o)}
-            className="md:hidden p-2 rounded-lg text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#F97316] transition-colors"
-            aria-label="Toggle menu"
+            className="md:hidden p-2 rounded-lg text-white hover:bg-white/15 transition-colors"
+            aria-label="เมนู"
           >
             {mobileMenuOpen ? (
               <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -119,56 +130,50 @@ const Navbar = () => {
           </button>
         </div>
 
+        {/* Mobile menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-gray-200 py-4">
-            <div className="flex flex-col gap-2">
-              {menuItems.map((item) => (
+          <div className="md:hidden border-t border-white/20 py-4">
+            <div className="flex flex-col gap-1">
+              {mainMenu.map((item) => (
                 <Link
                   key={item.path}
                   to={item.path}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`${linkClass(item.path)} ${item.path === '/cart' ? 'relative inline-flex items-center' : ''}`}
+                  className="px-4 py-3 rounded-lg text-white font-medium hover:bg-white/15"
                 >
                   {item.name}
-                  {item.path === '/cart' && totalItems > 0 && (
-                    <span className="ml-2 min-w-[1.25rem] h-5 px-1 flex items-center justify-center bg-[#F97316] text-white text-xs font-bold rounded-full">
-                      {totalItems > 99 ? '99+' : totalItems}
-                    </span>
-                  )}
                 </Link>
               ))}
-              {loading ? (
-                <span className="px-4 py-3 text-gray-400 text-sm">กำลังโหลด...</span>
-              ) : user ? (
+              <Link
+                to="/cart"
+                onClick={() => setMobileMenuOpen(false)}
+                className="px-4 py-3 rounded-lg text-white font-medium hover:bg-white/15 flex items-center gap-2"
+              >
+                ตะกร้า
+                {totalItems > 0 && (
+                  <span className="bg-white text-[#F97316] text-xs font-bold px-2 py-0.5 rounded-full">
+                    {totalItems}
+                  </span>
+                )}
+              </Link>
+              {user ? (
                 <>
-                  <Link
-                    to="/profile"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={linkClass('/profile')}
-                  >
+                  <Link to="/profile" onClick={() => setMobileMenuOpen(false)} className="px-4 py-3 rounded-lg text-white font-medium hover:bg-white/15">
                     โปรไฟล์
                   </Link>
-                  <button
-                    type="button"
-                    onClick={handleLogout}
-                    className="px-4 py-3 rounded-lg text-base font-medium text-left text-gray-700 hover:text-red-600 hover:bg-red-50 transition-colors"
-                  >
+                  <button type="button" onClick={handleLogout} className="px-4 py-3 text-left text-white font-medium hover:bg-white/15 rounded-lg">
                     ออกจากระบบ
                   </button>
                 </>
               ) : (
                 <>
-                  <Link
-                    to="/login"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-[#F97316] hover:bg-orange-50 transition-colors"
-                  >
+                  <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="px-4 py-3 rounded-lg text-white font-medium hover:bg-white/15">
                     เข้าสู่ระบบ
                   </Link>
                   <Link
                     to="/register"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="mx-4 mt-2 bg-[#F97316] text-white px-6 py-3 rounded-lg font-semibold text-center hover:bg-[#EA580C] transition-colors duration-200 shadow-md"
+                    className="mx-4 mt-2 bg-white text-[#F97316] py-3 rounded-lg font-semibold text-center"
                   >
                     สมัครสมาชิก
                   </Link>

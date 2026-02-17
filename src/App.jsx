@@ -9,7 +9,6 @@ import ProfilePage from './pages/ProfilePage';
 import AdminLogin from './components/AdminLogin';
 import AdminDashboard from './components/AdminDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
-import logo from '@/assets/logo.png'; // หรือ path ที่คุณ save
 
 /**
  * App – React Router v6

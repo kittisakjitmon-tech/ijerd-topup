@@ -1,32 +1,27 @@
 import { Link, useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
+import logoImg from '@/assets/logo.png';
 
 const SuccessPage = () => {
   const location = useLocation();
   const orderIds = location.state?.orderIds || [];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white flex flex-col">
       <Navbar />
-      <div className="max-w-lg mx-auto px-4 py-16 text-center">
-        <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-100 text-green-600 mb-8">
-          <svg
-            className="w-10 h-10"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M5 13l4 4L19 7"
-            />
-          </svg>
+      <div className="flex-1 max-w-lg mx-auto px-4 py-16 text-center w-full">
+        {/* Mascot แมว + heading ขอบคุณที่เติมกับ iJerd! */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 mb-8">
+          <img
+            src={logoImg}
+            alt="iJerd TOPUP แมวมาสคอต"
+            className="mascot-float mascot-hover w-20 h-20 sm:w-24 sm:h-24 object-contain transition-transform duration-300 flex-shrink-0"
+          />
+          <h1 className="text-2xl md:text-4xl font-bold text-gray-900">
+            ขอบคุณที่เติมกับ iJerd!
+          </h1>
         </div>
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-          ขอบคุณที่สั่งซื้อ
-        </h1>
         <p className="text-gray-600 mb-8">
           เราได้รับคำสั่งซื้อของคุณแล้ว จะดำเนินการให้เร็วที่สุด
         </p>
@@ -67,6 +62,7 @@ const SuccessPage = () => {
           </Link>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

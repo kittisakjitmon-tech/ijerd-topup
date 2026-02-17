@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 import { useCart } from '../context/CartContext';
+import logoImg from '@/assets/logo.png';
 import { createOrder, updateOrderStatus } from '../services/orderService';
 import { initOmisePayment, createToken, createSource } from '../services/omiseService';
 
@@ -135,9 +137,9 @@ const CheckoutPage = () => {
 
   if (items.length === 0 && !submitting) {
     return (
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-white flex flex-col">
         <Navbar />
-        <div className="max-w-lg mx-auto px-4 py-16 text-center">
+        <div className="flex-1 max-w-lg mx-auto px-4 py-16 text-center">
           <p className="text-gray-600 mb-6">ตะกร้าว่าง</p>
           <Link
             to="/cart"
@@ -146,6 +148,7 @@ const CheckoutPage = () => {
             ไปตะกร้า
           </Link>
         </div>
+        <Footer />
       </div>
     );
   }
@@ -158,12 +161,20 @@ const CheckoutPage = () => {
         : '';
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white flex flex-col">
       <Navbar />
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8">
-          ชำระเงิน
-        </h1>
+      <div className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 w-full">
+        {/* Mascot แมวข้าง heading ชำระเงิน */}
+        <div className="flex flex-wrap items-center gap-4 mb-8">
+          <img
+            src={logoImg}
+            alt="iJerd TOPUP"
+            className="mascot-float mascot-hover w-14 h-14 md:w-16 md:h-16 object-contain transition-transform duration-300 flex-shrink-0"
+          />
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+            ชำระเงิน
+          </h1>
+        </div>
 
         <div className="grid md:grid-cols-2 gap-8">
           <div className="order-2 md:order-1">
@@ -393,6 +404,7 @@ const CheckoutPage = () => {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

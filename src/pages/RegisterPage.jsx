@@ -3,19 +3,23 @@ import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
 
-const LoginPage = () => {
+const RegisterPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const { login, signInWithGoogle, error, clearError } = useAuth();
+  const { register, signInWithGoogle, error, clearError } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     clearError();
+    if (password !== confirmPassword) {
+      return;
+    }
     setSubmitting(true);
     try {
-      await login(email, password);
+      await register(email, password);
       navigate('/');
     } catch {
       // error set in useAuth
@@ -37,16 +41,18 @@ const LoginPage = () => {
     }
   };
 
+  const passwordMismatch = password && confirmPassword && password !== confirmPassword;
+
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
       <div className="max-w-md mx-auto px-4 py-16">
         <div className="bg-white rounded-2xl shadow-[0_2px_12px_rgba(249,115,22,0.12)] border border-orange-100 p-8">
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2 text-center">
-            เข้าสู่ระบบ
+            สมัครสมาชิก
           </h1>
           <p className="text-gray-600 text-center mb-8 text-sm">
-            เข้าสู่ระบบเพื่อใช้งานตะกร้าและโปรไฟล์
+            สร้างบัญชีเพื่อใช้งานตะกร้าและโปรไฟล์
           </p>
 
           {error && (
@@ -55,13 +61,19 @@ const LoginPage = () => {
             </div>
           )}
 
+          {passwordMismatch && (
+            <div className="mb-6 p-4 rounded-lg bg-red-50 border border-red-200">
+              <p className="text-red-700 text-sm font-medium">รหัสผ่านไม่ตรงกัน</p>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label htmlFor="login-email" className="block text-sm font-semibold text-gray-700 mb-1">
+              <label htmlFor="reg-email" className="block text-sm font-semibold text-gray-700 mb-1">
                 อีเมล
               </label>
               <input
-                id="login-email"
+                id="reg-email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -72,15 +84,32 @@ const LoginPage = () => {
               />
             </div>
             <div>
-              <label htmlFor="login-password" className="block text-sm font-semibold text-gray-700 mb-1">
+              <label htmlFor="reg-password" className="block text-sm font-semibold text-gray-700 mb-1">
                 รหัสผ่าน
               </label>
               <input
-                id="login-password"
+                id="reg-password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                minLength={6}
+                disabled={submitting}
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#F97316] focus:border-transparent outline-none transition disabled:bg-gray-50"
+                placeholder="อย่างน้อย 6 ตัวอักษร"
+              />
+            </div>
+            <div>
+              <label htmlFor="reg-confirm" className="block text-sm font-semibold text-gray-700 mb-1">
+                ยืนยันรหัสผ่าน
+              </label>
+              <input
+                id="reg-confirm"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                minLength={6}
                 disabled={submitting}
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#F97316] focus:border-transparent outline-none transition disabled:bg-gray-50"
                 placeholder="••••••••"
@@ -88,16 +117,16 @@ const LoginPage = () => {
             </div>
             <button
               type="submit"
-              disabled={submitting}
+              disabled={submitting || passwordMismatch}
               className="w-full bg-[#F97316] text-white py-3 rounded-lg font-semibold hover:bg-[#EA580C] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {submitting ? (
                 <>
                   <span className="inline-block w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  กำลังเข้าสู่ระบบ...
+                  กำลังสมัครสมาชิก...
                 </>
               ) : (
-                'เข้าสู่ระบบ'
+                'สมัครสมาชิก'
               )}
             </button>
           </form>
@@ -135,13 +164,13 @@ const LoginPage = () => {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
               />
             </svg>
-            เข้าสู่ระบบด้วย Google
+            สมัครด้วย Google
           </button>
 
           <p className="mt-8 text-center text-gray-600 text-sm">
-            ยังไม่มีบัญชี?{' '}
-            <Link to="/register" className="font-semibold text-[#F97316] hover:underline">
-              สมัครสมาชิก
+            มีบัญชีอยู่แล้ว?{' '}
+            <Link to="/login" className="font-semibold text-[#F97316] hover:underline">
+              เข้าสู่ระบบ
             </Link>
           </p>
         </div>
@@ -150,4 +179,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default RegisterPage;

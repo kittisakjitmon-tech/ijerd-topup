@@ -3,7 +3,11 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../config/firebase';
 
-const ProtectedRoute = ({ children }) => {
+/**
+ * @param {React.ReactNode} children
+ * @param {string} [redirectTo='/login'] - Where to redirect when not authenticated
+ */
+const ProtectedRoute = ({ children, redirectTo = '/login' }) => {
   const [loading, setLoading] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
   const navigate = useNavigate();
@@ -13,13 +17,13 @@ const ProtectedRoute = ({ children }) => {
       if (user) {
         setAuthenticated(true);
       } else {
-        navigate('/login');
+        navigate(redirectTo);
       }
       setLoading(false);
     });
 
     return () => unsubscribe();
-  }, [navigate]);
+  }, [navigate, redirectTo]);
 
   if (loading) {
     return (

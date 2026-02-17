@@ -1,107 +1,104 @@
 rules_version = '2';
+
+// =============================================================================
+// Firestore Security Rules - iJerdTopup
+// =============================================================================
+// - games: ทุกคนอ่านได้, เฉพาะ admin (UID ที่กำหนด) เขียนได้
+// - orders: user สร้าง/อ่านได้เฉพาะของตัวเอง (userId ต้องตรงกับ auth.uid)
+// - users: user อ่าน/เขียนได้เฉพาะ document ของตัวเอง
+// =============================================================================
+
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Helper function to check if user is authenticated
+
+    // -------------------------------------------------------------------------
+    // Helper: ตรวจสอบว่ามีการล็อกอิน
+    // -------------------------------------------------------------------------
     function isAuthenticated() {
       return request.auth != null;
     }
-    
-    // Helper function to check if user is an admin
-    // Option 1: Using custom claims (recommended)
+
+    // -------------------------------------------------------------------------
+    // Helper: ตรวจสอบว่าเป็น Admin
+    // กำหนด UID ของ admin เอง (จาก Firebase Console > Authentication > Users)
+    // -------------------------------------------------------------------------
     function isAdmin() {
-      return isAuthenticated() && 
-             request.auth.token.admin == true;
+      return isAuthenticated() &&
+             request.auth.uid in [
+               'YOUR_ADMIN_UID_HERE'  // แทนที่ด้วย UID จริงของแอดมิน (เช่น จาก auth.currentUser.uid)
+               // เพิ่ม UID อื่นได้: 'uid2', 'uid3'
+             ];
     }
-    
-    // Option 2: Check admin status from users collection
-    // Uncomment this if you prefer storing admin status in Firestore
-    // function isAdmin() {
-    //   return isAuthenticated() && 
-    //          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.admin == true;
-    // }
-    
-    // Games Collection Rules
+
+    // -------------------------------------------------------------------------
+    // Collection: games
+    // - อ่าน: ทุกคน (ไม่ต้องล็อกอิน)
+    // - สร้าง/แก้ไข/ลบ: เฉพาะ admin
+    // -------------------------------------------------------------------------
     match /games/{gameId} {
-      // Allow anyone to read active games
-      allow read: if resource.data.active == true;
-      
-      // Allow admins to read all games (including inactive ones)
-      allow read: if isAdmin();
-      
-      // Only admins can create, update, or delete games
-      allow create: if isAdmin() && 
-                       validateGameData(request.resource.data);
-      
-      allow update: if isAdmin() && 
-                       validateGameData(request.resource.data);
-      
+      allow read: if true;
+
+      allow create: if isAdmin() && validateGameCreate(request.resource.data);
+      allow update: if isAdmin() && validateGameUpdate(request.resource.data);
       allow delete: if isAdmin();
-      
-      // Validation function for game data
-      function validateGameData(data) {
+
+      function validateGameCreate(data) {
         return data.keys().hasAll(['name', 'imageUrl', 'category', 'active', 'priority']) &&
-               data.name is string && 
-               data.name.size() > 0 &&
-               data.imageUrl is string &&
-               data.imageUrl.size() > 0 &&
-               data.category is string &&
-               data.category.size() > 0 &&
+               data.name is string && data.name.size() > 0 &&
+               data.imageUrl is string && data.imageUrl.size() > 0 &&
+               data.category is string && data.category.size() > 0 &&
                data.active is bool &&
-               data.priority is int &&
-               data.priority >= 0;
+               data.priority is int && data.priority >= 0;
+      }
+
+      function validateGameUpdate(data) {
+        return data.keys().hasAll(['name', 'imageUrl', 'category', 'active', 'priority']) &&
+               data.name is string && data.name.size() > 0 &&
+               data.imageUrl is string && data.imageUrl.size() > 0 &&
+               data.category is string && data.category.size() > 0 &&
+               data.active is bool &&
+               data.priority is int && data.priority >= 0;
       }
     }
-    
-    // Orders Collection Rules
+
+    // -------------------------------------------------------------------------
+    // Collection: orders
+    // - สร้าง: ได้เฉพาะเมื่อล็อกอิน และต้องใส่ userId ตรงกับ auth.uid
+    // - อ่าน: ได้เฉพาะเอกสารที่ userId ตรงกับ auth.uid (อ่านของตัวเองเท่านั้น)
+    // - แก้ไข/ลบ: ไม่เปิดให้ user ลบ (ถ้าต้องการให้แอดมินลบ ให้เพิ่ม allow delete: if isAdmin();)
+    // -------------------------------------------------------------------------
     match /orders/{orderId} {
-      // Allow anyone to create a new order
-      allow create: if isAuthenticated() && 
-                       validateOrderData(request.resource.data);
-      
-      // Only admins can read all orders
-      allow read: if isAdmin();
-      
-      // Only admins can update or delete orders
-      allow update: if isAdmin();
-      allow delete: if isAdmin();
-      
-      // Validation function for order data
-      function validateOrderData(data) {
-        return data.keys().hasAll(['orderId', 'gameName', 'targetId', 'amount', 'status', 'timestamp']) &&
-               data.orderId is string &&
-               data.orderId.size() > 0 &&
-               data.gameName is string &&
-               data.gameName.size() > 0 &&
-               data.targetId is string &&
-               data.targetId.size() > 0 &&
-               data.amount is number &&
-               data.amount > 0 &&
-               data.status is string &&
-               data.status == 'pending' &&
+      allow create: if isAuthenticated() &&
+                       request.resource.data.userId == request.auth.uid &&
+                       validateOrderCreate(request.resource.data);
+
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+
+      allow update, delete: if false;
+
+      function validateOrderCreate(data) {
+        return data.keys().hasAll(['userId', 'orderId', 'gameName', 'targetId', 'amount', 'status', 'timestamp']) &&
+               data.userId is string && data.userId == request.auth.uid &&
+               data.orderId is string && data.orderId.size() > 0 &&
+               data.gameName is string && data.gameName.size() > 0 &&
+               data.targetId is string && data.targetId.size() > 0 &&
+               data.amount is number && data.amount > 0 &&
+               data.status is string && data.status == 'pending' &&
                data.timestamp is timestamp;
       }
     }
-    
-    // Users Collection (if you need to store user data)
+
+    // -------------------------------------------------------------------------
+    // Collection: users (เก็บข้อมูล user เพิ่มเติม)
+    // - อ่าน/เขียน: ได้เฉพาะ document ที่ document id ตรงกับ auth.uid
+    // -------------------------------------------------------------------------
     match /users/{userId} {
-      // Users can read their own data
-      allow read: if isAuthenticated() && request.auth.uid == userId;
-      
-      // Users can create their own document
-      allow create: if isAuthenticated() && 
-                       request.auth.uid == userId;
-      
-      // Users can update their own data (but not admin status)
-      allow update: if isAuthenticated() && 
-                       request.auth.uid == userId &&
-                       !('admin' in request.resource.data.diff(resource.data).affectedKeys());
-      
-      // Only admins can update admin status
-      allow update: if isAdmin();
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
     }
-    
-    // Deny all other collections by default
+
+    // -------------------------------------------------------------------------
+    // คอลเลกชันอื่น: ปิดทั้งหมด (default deny)
+    // -------------------------------------------------------------------------
     match /{document=**} {
       allow read, write: if false;
     }

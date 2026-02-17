@@ -1,6 +1,6 @@
 /**
- * Navbar – sticky, gradient ส้ม, โลโก้ + iJerd TOPUP, เมนู (Home, Games, Promotions, Contact)
- * รองรับ Auth + Cart badge; mobile first
+ * Navbar – sticky top, gradient from-orange-600 to-orange-400
+ * ซ้าย: logo h-14/h-20 + "iJerd TOPUP" สีขาว | ขวา: เมนู + cart badge | Mobile: hamburger
  */
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -18,9 +18,10 @@ const Navbar = () => {
   // เมนูหลัก (Home, Games, Promotions, Contact) + ระบบเดิม (ตะกร้า, โปรไฟล์, ล็อกอิน)
   const mainMenu = [
     { name: 'Home', path: '/' },
-    { name: 'Games', path: '/#games' },
-    { name: 'Promotions', path: '/#promotions' },
-    { name: 'Contact', path: '/#contact' },
+    { name: 'เกมยอดนิยม', path: '/#games' },
+    { name: 'โปรโมชั่น', path: '/#promotions' },
+    { name: 'ประวัติการเติม', path: '/profile' },
+    { name: 'ติดต่อเรา', path: '/#contact' },
   ];
 
   const isActive = (path) => location.pathname === path || (path === '/' && location.pathname === '/');
@@ -37,7 +38,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="sticky top-0 z-50 bg-gradient-to-r from-[#F97316] to-orange-500 shadow-lg">
+    <nav className="sticky top-0 z-50 bg-gradient-to-r from-orange-600 to-orange-400 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo + Brand */}
@@ -49,9 +50,9 @@ const Navbar = () => {
             <img
               src={logoImg}
               alt="iJerd TOPUP"
-              className="h-10 w-10 md:h-16 md:w-16 object-contain flex-shrink-0"
+              className="h-14 w-14 md:h-20 md:w-20 object-contain flex-shrink-0"
             />
-            <span className="text-[#F97316] font-bold text-lg md:text-2xl drop-shadow-sm">
+            <span className="text-white font-bold text-xl md:text-2xl drop-shadow-sm">
               iJerd TOPUP
             </span>
           </Link>
@@ -73,7 +74,7 @@ const Navbar = () => {
             >
               ตะกร้า
               {totalItems > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[1.25rem] h-5 px-1 flex items-center justify-center bg-white text-[#F97316] text-xs font-bold rounded-full">
+                <span className="absolute -top-0.5 -right-0.5 min-w-[1.25rem] h-5 px-1 flex items-center justify-center bg-white text-primary text-xs font-bold rounded-full">
                   {totalItems > 99 ? '99+' : totalItems}
                 </span>
               )}
@@ -103,7 +104,7 @@ const Navbar = () => {
                 </Link>
                 <Link
                   to="/register"
-                  className="bg-white text-[#F97316] px-4 py-2 rounded-lg font-semibold text-sm hover:bg-white/90 transition-colors shadow"
+                  className="bg-white text-primary px-4 py-2 rounded-lg font-semibold text-sm hover:bg-white/90 transition-colors shadow"
                 >
                   สมัครสมาชิก
                 </Link>
@@ -151,7 +152,7 @@ const Navbar = () => {
               >
                 ตะกร้า
                 {totalItems > 0 && (
-                  <span className="bg-white text-[#F97316] text-xs font-bold px-2 py-0.5 rounded-full">
+                  <span className="bg-white text-primary text-xs font-bold px-2 py-0.5 rounded-full">
                     {totalItems}
                   </span>
                 )}
@@ -173,7 +174,7 @@ const Navbar = () => {
                   <Link
                     to="/register"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="mx-4 mt-2 bg-white text-[#F97316] py-3 rounded-lg font-semibold text-center"
+                    className="mx-4 mt-2 bg-white text-primary py-3 rounded-lg font-semibold text-center"
                   >
                     สมัครสมาชิก
                   </Link>

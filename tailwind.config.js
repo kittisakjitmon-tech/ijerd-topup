@@ -6,6 +6,7 @@ export default {
   ],
   theme: {
     extend: {
+      // สีหลักแบรนด์ iJerd TOPUP – ใช้ผ่าน text-primary, bg-primary, etc.
       colors: {
         primary: {
           DEFAULT: '#F97316',

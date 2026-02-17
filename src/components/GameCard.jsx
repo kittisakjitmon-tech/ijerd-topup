@@ -1,21 +1,11 @@
-import { useCart } from '../context/CartContext';
+import { Link } from 'react-router-dom';
 
-const GameCard = ({ game, onTopUp }) => {
-  const { addToCart } = useCart();
+/**
+ * GameCard – แสดงเกมบน Landing, ลิงก์ไปหน้าเกม /games/:gameId เพื่อกรอก UID และเพิ่มลงตะกร้า
+ */
+const GameCard = ({ game }) => {
   const imageUrl = game.imageUrl || game.image;
   const price = game.price ?? 0;
-
-  const handleAddToCart = (e) => {
-    e.stopPropagation();
-    addToCart({
-      id: game.id,
-      name: game.name,
-      price,
-      imageUrl,
-      image: imageUrl,
-      quantity: 1,
-    });
-  };
 
   return (
     <div className="bg-white border-2 border-gray-200 rounded-lg overflow-hidden hover:border-[#F97316] transition-all duration-300 hover:shadow-lg">
@@ -38,24 +28,14 @@ const GameCard = ({ game, onTopUp }) => {
         )}
         <div className="flex items-center justify-between gap-2 flex-wrap">
           {price > 0 && (
-            <span className="text-[#F97316] font-bold text-lg">${Number(price).toFixed(2)}</span>
+            <span className="text-[#F97316] font-bold text-lg">฿{Number(price).toFixed(0)} ขึ้นไป</span>
           )}
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => onTopUp(game)}
-              className="bg-[#F97316] text-white px-4 py-2 rounded-md hover:bg-[#EA580C] transition-colors duration-200 font-medium text-sm"
-            >
-              Top Up
-            </button>
-            <button
-              type="button"
-              onClick={handleAddToCart}
-              className="border-2 border-[#F97316] text-[#F97316] px-4 py-2 rounded-md hover:bg-orange-50 transition-colors duration-200 font-medium text-sm"
-            >
-              เพิ่มลงตะกร้า
-            </button>
-          </div>
+          <Link
+            to={`/games/${game.id}`}
+            className="bg-[#F97316] text-white px-4 py-2 rounded-md hover:bg-[#EA580C] transition-colors duration-200 font-medium text-sm inline-block text-center"
+          >
+            เลือกแพ็ค / เติมเกม
+          </Link>
         </div>
       </div>
     </div>

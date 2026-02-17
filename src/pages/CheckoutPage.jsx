@@ -13,8 +13,6 @@ const CheckoutPage = () => {
   const { items, totalPrice, clearCart } = useCart();
   const navigate = useNavigate();
   const [form, setForm] = useState({
-    inGameUsername: '',
-    server: '',
     phone: '',
   });
   const [paymentMethod, setPaymentMethod] = useState('promptpay');
@@ -55,12 +53,13 @@ const CheckoutPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    if (!form.inGameUsername.trim()) {
-      setError('กรุณากรอก In-Game Username');
-      return;
-    }
     if (items.length === 0) {
       setError('ตะกร้าว่าง');
+      return;
+    }
+    const invalidUid = items.find((i) => !(i.uid && i.uid.trim().length >= 3));
+    if (invalidUid) {
+      setError('มีรายการที่ UID ไม่ครบหรือสั้นเกินไป กรุณากลับไปแก้ที่ตะกร้าหรือหน้าเกม');
       return;
     }
     if (!publicKey) {
@@ -91,10 +90,10 @@ const CheckoutPage = () => {
         const amount = (item.price || 0) * (item.quantity || 1);
         const order = await createOrder({
           gameName: item.name,
-          targetId: form.inGameUsername.trim(),
+          targetId: (item.uid ?? '').toString().trim(),
           amount,
-          packageName: item.name,
-          server: form.server.trim() || undefined,
+          packageName: item.packageName ?? item.name,
+          server: (item.server ?? '').toString().trim() || undefined,
           phone: form.phone.trim() || undefined,
         });
         createdOrders.push(order);
@@ -182,20 +181,29 @@ const CheckoutPage = () => {
               <h2 className="text-lg font-bold text-gray-900 mb-4">
                 <span className="text-[#F97316]">สรุปตะกร้า</span>
               </h2>
+              <p className="text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-sm font-medium mb-4">
+                ⚠️ ตรวจ UID ให้ดี – ผิดแล้วเติมไม่เข้าระบบ
+              </p>
               <ul className="space-y-3 mb-6 max-h-64 overflow-y-auto">
                 {items.map((item) => {
                   const subtotal = (item.price || 0) * (item.quantity || 1);
                   return (
                     <li
-                      key={item.gameId}
-                      className="flex justify-between items-center text-sm"
+                      key={item.cartLineId || item.gameId}
+                      className="text-sm border-b border-gray-200 pb-3 last:border-0 last:pb-0"
                     >
-                      <span className="text-gray-700 truncate flex-1 mr-2">
-                        {item.name} × {item.quantity}
-                      </span>
-                      <span className="text-[#F97316] font-semibold whitespace-nowrap">
-                        ฿{subtotal.toFixed(2)}
-                      </span>
+                      <div className="flex justify-between items-start gap-2">
+                        <span className="text-gray-900 font-medium truncate flex-1">
+                          {item.name} × {item.quantity}
+                        </span>
+                        <span className="text-[#F97316] font-semibold whitespace-nowrap">
+                          ฿{subtotal.toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="mt-1 text-gray-600 text-xs">
+                        UID: <span className="font-mono font-semibold">{item.uid || '–'}</span>
+                        {item.server && ` · Server: ${item.server}`}
+                      </div>
                     </li>
                   );
                 })}
@@ -215,7 +223,7 @@ const CheckoutPage = () => {
               className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm space-y-6"
             >
               <h2 className="text-lg font-bold text-gray-900">
-                ข้อมูลสำหรับแจ้งเติม
+                ข้อมูลติดต่อ (ถ้ามีปัญหา)
               </h2>
 
               {error && (
@@ -226,36 +234,7 @@ const CheckoutPage = () => {
 
               <div className="space-y-4">
                 <div>
-                  <label htmlFor="inGameUsername" className="block text-sm font-semibold text-gray-700 mb-1">
-                    In-Game Username <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    id="inGameUsername"
-                    name="inGameUsername"
-                    type="text"
-                    value={form.inGameUsername}
-                    onChange={handleChange}
-                    required
-                    disabled={submitting}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#F97316] focus:border-transparent outline-none disabled:bg-gray-50"
-                    placeholder="ชื่อในเกม"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="server" className="block text-sm font-semibold text-gray-700 mb-1">Server</label>
-                  <input
-                    id="server"
-                    name="server"
-                    type="text"
-                    value={form.server}
-                    onChange={handleChange}
-                    disabled={submitting}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#F97316] focus:border-transparent outline-none disabled:bg-gray-50"
-                    placeholder="เช่น Asia, Global"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="phone" className="block text-sm font-semibold text-gray-700 mb-1">เบอร์โทร (สำหรับแจ้งเติม)</label>
+                  <label htmlFor="phone" className="block text-sm font-semibold text-gray-700 mb-1">เบอร์โทร (สำหรับแจ้งเติม/ติดต่อ)</label>
                   <input
                     id="phone"
                     name="phone"
@@ -264,7 +243,7 @@ const CheckoutPage = () => {
                     onChange={handleChange}
                     disabled={submitting}
                     className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#F97316] focus:border-transparent outline-none disabled:bg-gray-50"
-                    placeholder="08xxxxxxxx"
+                    placeholder="08xxxxxxxx (ไม่บังคับ)"
                   />
                 </div>
               </div>

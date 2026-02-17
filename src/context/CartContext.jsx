@@ -2,40 +2,78 @@ import { createContext, useContext, useReducer, useEffect } from 'react';
 
 const CART_STORAGE_KEY = 'ijerdtopup_cart';
 
+/**
+ * Cart item shape:
+ * - cartLineId: string (unique per line, for remove/update)
+ * - gameId, name, price, image, quantity
+ * - uid: string (player UID/Game ID)
+ * - server: string (optional)
+ * - username: string (optional, in-game name)
+ * - packageName: string (optional)
+ */
 const cartReducer = (state, action) => {
   switch (action.type) {
     case 'LOAD': {
       return Array.isArray(action.payload) ? action.payload : [];
     }
     case 'ADD_ITEM': {
-      const { gameId, name, price, image, quantity = 1 } = action.payload;
-      const numPrice = Number(price) || 0;
-      const existing = state.find((i) => i.gameId === gameId);
+      const payload = action.payload;
+      const gameId = payload.gameId ?? payload.id;
+      const name = payload.name ?? '';
+      const price = Number(payload.price) ?? 0;
+      const image = payload.image ?? payload.imageUrl ?? '';
+      const quantity = payload.quantity ?? 1;
+      const uid = (payload.uid ?? '').toString().trim();
+      const server = (payload.server ?? '').toString().trim();
+      const username = (payload.username ?? '').toString().trim();
+      const packageName = (payload.packageName ?? '').toString().trim() || null;
+
+      const cartLineId = payload.cartLineId ?? `cart-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+
+      const sameLine = (i) =>
+        i.gameId === gameId &&
+        (i.uid ?? '') === uid &&
+        (i.server ?? '') === server &&
+        (i.packageName ?? '') === (packageName ?? '');
+
+      const existing = state.find(sameLine);
       let next;
       if (existing) {
         next = state.map((i) =>
-          i.gameId === gameId
+          sameLine(i)
             ? { ...i, quantity: i.quantity + quantity }
             : i
         );
       } else {
         next = [
           ...state,
-          { gameId, name, price: numPrice, image: image || '', quantity },
+          {
+            cartLineId,
+            gameId,
+            name,
+            price,
+            image,
+            quantity,
+            uid,
+            server: server || null,
+            username: username || null,
+            packageName,
+          },
         ];
       }
       return next;
     }
     case 'REMOVE_ITEM': {
-      return state.filter((i) => i.gameId !== action.payload);
+      const key = action.payload;
+      return state.filter((i) => i.cartLineId !== key && i.gameId !== key);
     }
     case 'UPDATE_QUANTITY': {
-      const { gameId, quantity } = action.payload;
+      const { cartLineId, quantity } = action.payload;
       if (quantity <= 0) {
-        return state.filter((i) => i.gameId !== gameId);
+        return state.filter((i) => i.cartLineId !== cartLineId);
       }
       return state.map((i) =>
-        i.gameId === gameId ? { ...i, quantity } : i
+        i.cartLineId === cartLineId ? { ...i, quantity } : i
       );
     }
     case 'CLEAR_CART':
@@ -51,7 +89,15 @@ function loadStoredCart() {
   try {
     const raw = localStorage.getItem(CART_STORAGE_KEY);
     const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed : [];
+    const list = Array.isArray(parsed) ? parsed : [];
+    return list.map((i, idx) => ({
+      ...i,
+      cartLineId: i.cartLineId || `legacy-${i.gameId}-${idx}-${Date.now()}`,
+      uid: i.uid ?? '',
+      server: i.server ?? null,
+      username: i.username ?? null,
+      packageName: i.packageName ?? null,
+    }));
   } catch {
     return [];
   }
@@ -69,24 +115,30 @@ export function CartProvider({ children }) {
   }, [items]);
 
   const addToCart = (item) => {
+    const cartLineId = `cart-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
     dispatch({
       type: 'ADD_ITEM',
       payload: {
-        gameId: item.id || item.gameId,
+        cartLineId,
+        gameId: item.id ?? item.gameId,
         name: item.name,
         price: item.price ?? 0,
-        image: item.imageUrl || item.image || '',
+        image: item.imageUrl ?? item.image ?? '',
         quantity: item.quantity ?? 1,
+        uid: (item.uid ?? '').toString().trim(),
+        server: (item.server ?? '').toString().trim() || null,
+        username: (item.username ?? '').toString().trim() || null,
+        packageName: item.packageName ?? null,
       },
     });
   };
 
-  const removeFromCart = (gameId) => {
-    dispatch({ type: 'REMOVE_ITEM', payload: gameId });
+  const removeFromCart = (cartLineIdOrGameId) => {
+    dispatch({ type: 'REMOVE_ITEM', payload: cartLineIdOrGameId });
   };
 
-  const updateQuantity = (gameId, quantity) => {
-    dispatch({ type: 'UPDATE_QUANTITY', payload: { gameId, quantity } });
+  const updateQuantity = (cartLineId, quantity) => {
+    dispatch({ type: 'UPDATE_QUANTITY', payload: { cartLineId, quantity } });
   };
 
   const clearCart = () => {

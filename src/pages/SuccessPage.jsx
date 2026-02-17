@@ -22,8 +22,11 @@ const SuccessPage = () => {
             ขอบคุณที่เติมกับ iJerd!
           </h1>
         </div>
-        <p className="text-gray-600 mb-8">
-          เราได้รับคำสั่งซื้อของคุณแล้ว จะดำเนินการให้เร็วที่สุด
+        <p className="text-gray-600 mb-6 text-lg">
+          ขอบคุณ! จะเติมให้ภายใน 5 นาที
+        </p>
+        <p className="text-gray-500 mb-8">
+          ติดต่อ Line <strong>@ijerdtopup</strong> ถ้ามีปัญหา
         </p>
 
         {orderIds.length > 0 && (
@@ -42,7 +45,7 @@ const SuccessPage = () => {
               ))}
             </ul>
             <p className="text-xs text-gray-500 mt-3">
-              กรุณาเก็บเลขที่สั่งซื้อไว้สำหรับติดตามสถานะ
+              เก็บเลขที่สั่งซื้อไว้สำหรับติดตาม หรือแจ้ง Line @ijerdtopup
             </p>
           </div>
         )}

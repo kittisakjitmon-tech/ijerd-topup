@@ -1,6 +1,4 @@
-import { useState } from 'react';
 import { useGames } from '../hooks/useGames';
-import OrderForm from '../components/OrderForm';
 import GameCard from '../components/GameCard';
 import Navbar from '../components/Navbar';
 import HeroSection from '../components/HeroSection';
@@ -8,19 +6,6 @@ import Footer from '../components/Footer';
 
 const LandingPage = () => {
   const { games, loading, error } = useGames();
-  const [selectedGame, setSelectedGame] = useState(null);
-
-  const handleGameClick = (game) => {
-    setSelectedGame(game);
-  };
-
-  const handleCloseOrderForm = () => {
-    setSelectedGame(null);
-  };
-
-  const handleOrderSuccess = (order) => {
-    console.log('Order created successfully:', order);
-  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -61,11 +46,7 @@ const LandingPage = () => {
           {!loading && games.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {games.map((game) => (
-                <GameCard
-                  key={game.id}
-                  game={game}
-                  onTopUp={handleGameClick}
-                />
+                <GameCard key={game.id} game={game} />
               ))}
             </div>
           )}
@@ -84,14 +65,6 @@ const LandingPage = () => {
       </section>
 
       <Footer />
-
-      {selectedGame && (
-        <OrderForm
-          game={selectedGame}
-          onClose={handleCloseOrderForm}
-          onSuccess={handleOrderSuccess}
-        />
-      )}
     </div>
   );
 };

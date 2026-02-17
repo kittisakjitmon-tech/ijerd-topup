@@ -1,42 +1,40 @@
-import { useEffect, useState } from 'react';
-import { onAuthStateChanged } from 'firebase/auth';
-import { useNavigate } from 'react-router-dom';
-import { auth } from '../config/firebase';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 
 /**
- * @param {React.ReactNode} children
- * @param {string} [redirectTo='/login'] - Where to redirect when not authenticated
+ * แสดง children เฉพาะเมื่อ user ล็อกอินแล้ว
+ * ถ้า !user จะ redirect ไป redirectTo (default /login)
+ * ใช้กับ route /cart, /checkout, /profile
  */
 const ProtectedRoute = ({ children, redirectTo = '/login' }) => {
-  const [loading, setLoading] = useState(true);
-  const [authenticated, setAuthenticated] = useState(false);
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setAuthenticated(true);
-      } else {
-        navigate(redirectTo);
-      }
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, [navigate, redirectTo]);
+    if (loading) return;
+    if (!user) {
+      navigate(redirectTo, { state: { from: location.pathname }, replace: true });
+    }
+  }, [user, loading, navigate, redirectTo, location.pathname]);
 
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#F97316]"></div>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#F97316]" />
           <p className="mt-4 text-gray-600">กำลังตรวจสอบสิทธิ์...</p>
         </div>
       </div>
     );
   }
 
-  return authenticated ? children : null;
+  if (!user) {
+    return null;
+  }
+
+  return children;
 };
 
 export default ProtectedRoute;

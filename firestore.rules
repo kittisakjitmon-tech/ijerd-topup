@@ -1,18 +1,22 @@
 rules_version = '2';
 
 // =============================================================================
-// Firestore Security Rules - iJerdTopup
+// Firestore Security Rules - iJerdTopup (เว็บเติมเกม)
 // =============================================================================
-// - games: ทุกคนอ่านได้, เฉพาะ admin (UID ที่กำหนด) เขียนได้
-// - orders: user สร้าง/อ่านได้เฉพาะของตัวเอง (userId ต้องตรงกับ auth.uid)
-// - users: user อ่าน/เขียนได้เฉพาะ document ของตัวเอง
+//
+// สรุปสิทธิ์:
+// - games:    ทุกคนอ่านได้ | เฉพาะ admin (UID ที่กำหนด) สร้าง/แก้ไข/ลบได้
+// - orders:   สร้างได้เฉพาะหลัง login และต้องมี userId == auth.uid
+//             อ่าน/อัปเดตได้เฉพาะของตัวเอง | admin อ่านทุกอันได้
+// - users:    user อ่าน/เขียนได้เฉพาะ document ของตัวเอง (profile)
+//
 // =============================================================================
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
     // -------------------------------------------------------------------------
-    // Helper: ตรวจสอบว่ามีการล็อกอิน
+    // Helper: ตรวจสอบว่าผู้ใช้ล็อกอินแล้ว
     // -------------------------------------------------------------------------
     function isAuthenticated() {
       return request.auth != null;
@@ -20,38 +24,29 @@ service cloud.firestore {
 
     // -------------------------------------------------------------------------
     // Helper: ตรวจสอบว่าเป็น Admin
-    // กำหนด UID ของ admin เอง (จาก Firebase Console > Authentication > Users)
+    // แทนที่ 'uidadmin123' ด้วย UID จริงจาก Firebase Console > Authentication > Users
     // -------------------------------------------------------------------------
     function isAdmin() {
       return isAuthenticated() &&
              request.auth.uid in [
-               'YOUR_ADMIN_UID_HERE'  // แทนที่ด้วย UID จริงของแอดมิน (เช่น จาก auth.currentUser.uid)
-               // เพิ่ม UID อื่นได้: 'uid2', 'uid3'
+               'uidadmin123'   // แทนที่ด้วย UID ของคุณ (เช่น คัดลอกจาก User UID ใน Authentication)
+               // เพิ่ม admin คนอื่น: 'uid2', 'uid3'
              ];
     }
 
     // -------------------------------------------------------------------------
     // Collection: games
-    // - อ่าน: ทุกคน (ไม่ต้องล็อกอิน)
-    // - สร้าง/แก้ไข/ลบ: เฉพาะ admin
+    // - read:  ทุกคน (ไม่ต้องล็อกอิน)
+    // - create/update/delete: เฉพาะ admin
     // -------------------------------------------------------------------------
     match /games/{gameId} {
       allow read: if true;
 
-      allow create: if isAdmin() && validateGameCreate(request.resource.data);
-      allow update: if isAdmin() && validateGameUpdate(request.resource.data);
+      allow create: if isAdmin() && validateGameData(request.resource.data);
+      allow update: if isAdmin() && validateGameData(request.resource.data);
       allow delete: if isAdmin();
 
-      function validateGameCreate(data) {
-        return data.keys().hasAll(['name', 'imageUrl', 'category', 'active', 'priority']) &&
-               data.name is string && data.name.size() > 0 &&
-               data.imageUrl is string && data.imageUrl.size() > 0 &&
-               data.category is string && data.category.size() > 0 &&
-               data.active is bool &&
-               data.priority is int && data.priority >= 0;
-      }
-
-      function validateGameUpdate(data) {
+      function validateGameData(data) {
         return data.keys().hasAll(['name', 'imageUrl', 'category', 'active', 'priority']) &&
                data.name is string && data.name.size() > 0 &&
                data.imageUrl is string && data.imageUrl.size() > 0 &&
@@ -63,20 +58,31 @@ service cloud.firestore {
 
     // -------------------------------------------------------------------------
     // Collection: orders
-    // - สร้าง: ได้เฉพาะเมื่อล็อกอิน และต้องใส่ userId ตรงกับ auth.uid
-    // - อ่าน: ได้เฉพาะเอกสารที่ userId ตรงกับ auth.uid (อ่านของตัวเองเท่านั้น)
-    // - แก้ไข/ลบ: ไม่เปิดให้ user ลบ (ถ้าต้องการให้แอดมินลบ ให้เพิ่ม allow delete: if isAdmin();)
+    // - create: เฉพาะหลัง login และ document ต้องมี userId == request.auth.uid
+    // - read:   user อ่านได้เฉพาะที่ resource.data.userId == auth.uid
+    //           admin อ่านทุก document ได้
+    // - update: user อัปเดตได้เฉพาะของตัวเอง (userId == auth.uid)
+    // - delete: ไม่ให้ user ลบ (ถ้าต้องการให้ admin ลบ ให้เพิ่ม allow delete: if isAdmin();)
     // -------------------------------------------------------------------------
     match /orders/{orderId} {
+      // สร้าง order ได้เฉพาะเมื่อล็อกอิน และต้องส่ง userId ตรงกับ auth.uid
       allow create: if isAuthenticated() &&
                        request.resource.data.userId == request.auth.uid &&
                        validateOrderCreate(request.resource.data);
 
-      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      // อ่าน: เฉพาะ order ของตัวเอง หรือเป็น admin
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
 
-      allow update, delete: if false;
+      // อัปเดต: เฉพาะ order ของตัวเอง
+      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
+
+      allow delete: if false;
 
       function validateOrderCreate(data) {
+        // ฟิลด์บังคับ (server, phone เป็น optional ใน app ได้)
         return data.keys().hasAll(['userId', 'orderId', 'gameName', 'targetId', 'amount', 'status', 'timestamp']) &&
                data.userId is string && data.userId == request.auth.uid &&
                data.orderId is string && data.orderId.size() > 0 &&
@@ -89,8 +95,8 @@ service cloud.firestore {
     }
 
     // -------------------------------------------------------------------------
-    // Collection: users (เก็บข้อมูล user เพิ่มเติม)
-    // - อ่าน/เขียน: ได้เฉพาะ document ที่ document id ตรงกับ auth.uid
+    // Collection: users (profile ต่อ user)
+    // - read, write: ได้เฉพาะ document ที่ path เป็น uid ของตัวเองเท่านั้น
     // -------------------------------------------------------------------------
     match /users/{userId} {
       allow read, write: if isAuthenticated() && request.auth.uid == userId;

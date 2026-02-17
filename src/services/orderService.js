@@ -1,4 +1,4 @@
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, updateDoc } from 'firebase/firestore';
 import { db, auth } from '../config/firebase';
 
 /**
@@ -95,6 +95,21 @@ export const createOrder = async (orderData) => {
   } catch (error) {
     console.error('Error creating order:', error);
     throw new Error(error.message || 'Failed to create order');
+  }
+};
+
+/**
+ * อัปเดตสถานะ order (เช่น เป็น paid หลังชำระผ่าน Omise)
+ * @param {string} orderDocId - Firestore document id ของ order
+ * @param {Object} updates - ฟิลด์ที่ต้องการอัปเดต เช่น { status: 'paid' }
+ */
+export const updateOrderStatus = async (orderDocId, updates) => {
+  try {
+    const orderRef = doc(db, ORDERS_COLLECTION, orderDocId);
+    await updateDoc(orderRef, updates);
+  } catch (error) {
+    console.error('Error updating order:', error);
+    throw new Error(error.message || 'Failed to update order');
   }
 };
 

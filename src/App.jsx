@@ -11,19 +11,11 @@ import AdminDashboard from './components/AdminDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 
 /**
- * App - Routing controller (React Router v6)
+ * App – React Router v6
  *
- * Public:
- *   /           → LandingPage (home, with Navbar)
- *   /login      → LoginPage
- *   /register   → RegisterPage
- *   /cart       → CartPage
- *   /checkout   → CheckoutPage
- *   /profile    → ProfilePage
- *
- * Admin:
- *   /admin/login → AdminLogin
- *   /admin       → AdminDashboard (Protected)
+ * Public:  /  /login  /register  /checkout/success
+ * Protected (redirect ไป /login ถ้าไม่ login):  /cart  /checkout  /profile
+ * Admin:  /admin/login  /admin (protected → /admin/login)
  */
 function App() {
   return (

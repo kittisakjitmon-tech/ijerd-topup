@@ -1,3 +1,8 @@
+/**
+ * RegisterPage – สมัครสมาชิกด้วยอีเมล/รหัสผ่าน หรือ Google
+ * ใช้ useAuth(): register, signInWithGoogle, error, clearError
+ * validate รหัสผ่านตรงกัน; handle error/loading; สีส้ม #F97316
+ */
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';

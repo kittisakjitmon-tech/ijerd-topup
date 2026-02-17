@@ -27,10 +27,10 @@ function authErrorToMessage(code, fallback) {
 }
 
 /**
- * Logic hook สำหรับ Firebase Auth
- * - ใช้ onAuthStateChanged เพื่อ track user ทั่วแอป
- * - return: user, loading, error, clearError, login, register, logout, signInWithGoogle
- * ใช้ผ่าน useAuth() จาก AuthContext ใน component
+ * useAuthLogic – Firebase Auth logic (ใช้ภายใน AuthProvider เท่านั้น)
+ * - onAuthStateChanged: track user state ทั่วแอป
+ * - return: user, loading, error, clearError, login, register, logout, signInWithGoogle, googleSignIn
+ * ใน component ใช้ useAuth() จาก AuthContext ไม่ต้องเรียก useAuthLogic โดยตรง
  */
 export function useAuthLogic() {
   const [user, setUser] = useState(null);
@@ -97,5 +97,7 @@ export function useAuthLogic() {
     register,
     logout,
     signInWithGoogle,
+    /** Alias สำหรับ signInWithGoogle */
+    googleSignIn: signInWithGoogle,
   };
 }

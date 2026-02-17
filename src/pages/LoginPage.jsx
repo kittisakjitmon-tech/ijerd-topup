@@ -1,3 +1,8 @@
+/**
+ * LoginPage – เข้าสู่ระบบด้วยอีเมล/รหัสผ่าน หรือ Google
+ * ใช้ useAuth(): login, signInWithGoogle, error, clearError
+ * handle error/loading state; สีส้ม #F97316 (Tailwind)
+ */
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';

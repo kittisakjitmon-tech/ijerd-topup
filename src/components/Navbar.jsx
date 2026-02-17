@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { isAdmin } from '../config/admin';
 import logoImg from '@/assets/logo.png';
 
 const Navbar = () => {
@@ -79,6 +80,11 @@ const Navbar = () => {
                 </span>
               )}
             </Link>
+            {user && isAdmin(user.uid) && (
+              <Link to="/admin" className={linkClass('/admin')}>
+                Admin
+              </Link>
+            )}
           </div>
 
           <div className="hidden md:flex items-center gap-2">
@@ -157,6 +163,11 @@ const Navbar = () => {
                   </span>
                 )}
               </Link>
+              {user && isAdmin(user.uid) && (
+                <Link to="/admin" onClick={() => setMobileMenuOpen(false)} className="px-4 py-3 rounded-lg text-white font-medium hover:bg-white/15">
+                  Admin
+                </Link>
+              )}
               {user ? (
                 <>
                   <Link to="/profile" onClick={() => setMobileMenuOpen(false)} className="px-4 py-3 rounded-lg text-white font-medium hover:bg-white/15">

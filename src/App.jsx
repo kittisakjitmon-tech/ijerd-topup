@@ -8,7 +8,7 @@ import CheckoutPage from './pages/CheckoutPage';
 import SuccessPage from './pages/SuccessPage';
 import ProfilePage from './pages/ProfilePage';
 import AdminLogin from './components/AdminLogin';
-import AdminDashboard from './components/AdminDashboard';
+import AdminDashboard from './pages/AdminDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 
 /**

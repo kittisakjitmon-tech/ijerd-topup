@@ -28,8 +28,7 @@ const Navbar = () => {
   const isActive = (path) => location.pathname === path || (path === '/' && location.pathname === '/');
 
   const linkClass = (path) =>
-    `px-3 py-2 rounded-lg text-sm lg:text-base font-medium transition-colors duration-200 ${
-      isActive(path) ? 'text-white bg-white/20' : 'text-white/95 hover:bg-white/15'
+    `px-3 py-2 rounded-lg text-sm lg:text-base font-medium transition-colors duration-200 ${isActive(path) ? 'text-white bg-white/20' : 'text-white/95 hover:bg-white/15'
     }`;
 
   const handleLogout = async () => {
@@ -42,7 +41,7 @@ const Navbar = () => {
     <nav className="sticky top-0 z-50 bg-gradient-to-r from-orange-600 to-orange-400 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
-          {/* Logo + Brand */}
+          {/* โลโก้ + ชื่อแบรนด์ (Logo + Brand) */}
           <Link
             to="/"
             className="flex items-center gap-2 md:gap-3"
@@ -58,7 +57,7 @@ const Navbar = () => {
             </span>
           </Link>
 
-          {/* Desktop: เมนูหลัก + Cart + Auth */}
+          {/* เดสก์ท็อป: เมนูหลัก + ตะกร้า + การยืนยันตัวตน (Desktop: Main Menu + Cart + Auth) */}
           <div className="hidden md:flex items-center gap-1 lg:gap-2">
             {mainMenu.map((item) => (
               <Link
@@ -118,7 +117,7 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* Mobile menu button */}
+          {/* ปุ่มเมนูมือถือ (Mobile menu button) */}
           <button
             type="button"
             onClick={() => setMobileMenuOpen((o) => !o)}
@@ -137,7 +136,7 @@ const Navbar = () => {
           </button>
         </div>
 
-        {/* Mobile menu */}
+        {/* เมนูมือถือ (Mobile menu) */}
         {mobileMenuOpen && (
           <div className="md:hidden border-t border-white/20 py-4">
             <div className="flex flex-col gap-1">

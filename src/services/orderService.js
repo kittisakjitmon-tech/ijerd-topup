@@ -2,22 +2,22 @@ import { collection, addDoc, serverTimestamp, doc, updateDoc } from 'firebase/fi
 import { db, auth } from '../config/firebase';
 
 /**
- * Order document schema (Firestore):
+ * โครงสร้างข้อมูลคำสั่งซื้อ (Order document schema):
  * - userId: string (auth.uid - ใช้ใน Security Rules ให้ user อ่านได้เฉพาะของตัวเอง)
- * - orderId: string (generated)
- * - gameName: string
- * - targetId: string (user's Game ID)
- * - amount: number
- * - packageName: string (optional)
- * - status: string (pending, completed, cancelled)
- * - timestamp: Timestamp
+ * - orderId: string (สร้างอัตโนมัติ)
+ * - gameName: string (ชื่อเกม)
+ * - targetId: string (Game ID ของผู้ใช้)
+ * - amount: number (จำนวนเงิน)
+ * - packageName: string (ชื่อแพ็คเกจ - ไม่บังคับ)
+ * - status: string (สถานะ: pending, completed, cancelled)
+ * - timestamp: Timestamp (เวลาที่สร้าง)
  */
 
 const ORDERS_COLLECTION = 'orders';
 
 /**
- * Generates a unique order ID
- * @returns {string} Order ID in format ORD-YYYYMMDD-HHMMSS-XXXX
+ * สร้างรหัสคำสั่งซื้อที่ไม่ซ้ำกัน (Order ID)
+ * @returns {string} Order ID ในรูปแบบ ORD-YYYYMMDD-HHMMSS-XXXX
  */
 const generateOrderId = () => {
   const now = new Date();
@@ -28,22 +28,22 @@ const generateOrderId = () => {
   const minutes = String(now.getMinutes()).padStart(2, '0');
   const seconds = String(now.getSeconds()).padStart(2, '0');
   const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-  
+
   return `ORD-${year}${month}${day}-${hours}${minutes}${seconds}-${random}`;
 };
 
 /**
- * Creates a new order in Firestore.
+ * สร้างคำสั่งซื้อใหม่ใน Firestore
  * ต้องล็อกอินก่อน (userId จะถูกใส่จาก auth.currentUser.uid เพื่อให้ Rules อนุญาตและให้ user อ่าน order ของตัวเองได้เท่านั้น)
  *
- * @param {Object} orderData - Order data
- * @param {string} orderData.gameName - Name of the game
- * @param {string} orderData.targetId - User's Game ID
- * @param {number} orderData.amount - Order amount
- * @param {string} [orderData.packageName] - Package name (optional)
- * @param {string} [orderData.server] - Server (optional, for contact)
- * @param {string} [orderData.phone] - Phone number (optional, for contact)
- * @returns {Promise<Object>} Created order
+ * @param {Object} orderData - ข้อมูลคำสั่งซื้อ
+ * @param {string} orderData.gameName - ชื่อเกม
+ * @param {string} orderData.targetId - Game ID ของผู้ใช้
+ * @param {number} orderData.amount - จำนวนเงิน
+ * @param {string} [orderData.packageName] - ชื่อแพ็คเกจ (ไม่บังคับ)
+ * @param {string} [orderData.server] - เซิร์ฟเวอร์ (ไม่บังคับ, สำหรับติดต่อ)
+ * @param {string} [orderData.phone] - เบอร์โทรศัพท์ (ไม่บังคับ, สำหรับติดต่อ)
+ * @returns {Promise<Object>} คำสั่งซื้อที่สร้างขึ้น
  */
 export const createOrder = async (orderData) => {
   try {
@@ -114,24 +114,23 @@ export const updateOrderStatus = async (orderDocId, updates) => {
 };
 
 /**
- * Generates a payment QR code data string
- * @param {Object} order - Order object
- * @returns {string} QR code data string
+ * สร้างข้อมูล QR Code สำหรับชำระเงิน
+ * @param {Object} order - วัตถุข้อมูลคำสั่งซื้อ
+ * @returns {string} ข้อมูล QR Code หรือลิงก์ชำระเงิน
  */
 export const generatePaymentQRData = (order) => {
-  // You can customize this to match your payment provider's format
-  // Example format: payment://order?orderId=ORD-xxx&amount=xxx
+  // สามารถปรับแต่งรูปแบบตามผู้ให้บริการชำระเงินของคุณ
+  // ตัวอย่าง: payment://order?orderId=ORD-xxx&amount=xxx
   const qrData = {
     orderId: order.orderId,
     amount: order.amount,
     gameName: order.gameName,
     timestamp: new Date().toISOString(),
   };
-  
-  // Return as JSON string or payment URL format
-  // Adjust this based on your payment provider's requirements
+
+  // ส่งคืนเป็น JSON string หรือ URL ชำระเงิน
   return JSON.stringify(qrData);
-  
-  // Alternative: Return payment URL if you have a payment gateway
+
+  // ทางเลือก: ส่งคืน URL ชำระเงินถ้ามี payment gateway
   // return `https://payment.example.com/pay?orderId=${order.orderId}&amount=${order.amount}`;
 };

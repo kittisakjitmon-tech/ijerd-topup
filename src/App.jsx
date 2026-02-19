@@ -14,9 +14,9 @@ import ProtectedRoute from './components/ProtectedRoute';
 /**
  * App – React Router v6
  *
- * Public:  /  /login  /register  /checkout/success
- * Protected (redirect ไป /login ถ้าไม่ login):  /cart  /checkout  /profile
- * Admin:  /admin/login  /admin (protected → /admin/login)
+ * ส่วนสาธารณะ (Public):  /  /login  /register  /checkout/success
+ * ส่วนที่ต้องล็อกอิน (Protected):  /cart  /checkout  /profile (ถ้ายังไม่ล็อกอินจะ redirect ไปหน้า /login)
+ * ส่วนผู้ดูแลระบบ (Admin):  /admin/login  /admin (ถ้ายังไม่ล็อกอินจะ redirect ไปหน้า /admin/login)
  */
 function App() {
   return (

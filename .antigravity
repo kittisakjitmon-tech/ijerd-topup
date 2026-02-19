@@ -1,0 +1,53 @@
+{
+    "project_name": "iJerdTopup",
+    "version": "1.0.0",
+    "tech_stack": {
+        "frontend": [
+            "React",
+            "Vite",
+            "Tailwind CSS"
+        ],
+        "backend": [
+            "Firebase Auth",
+            "Firestore",
+            "Cloud Functions"
+        ],
+        "state_management": "Zustand"
+    },
+    "agent_settings": {
+        "language": "Thai",
+        "response_style": "Professional and helpful in Thai language",
+        "persona": "Expert Full-Stack Developer & UX Designer for E-sports",
+        "coding_style": "Functional, Clean Code, Mobile-First, DRY",
+        "preferred_model": "Gemini-3-Pro-High"
+    },
+    "ui_ux_constraints": {
+        "theme": "Clean Vibrant Orange",
+        "primary_colors": {
+            "bg": "#FFFFFF",
+            "surface": "#F8F9FA",
+            "primary": "#FF8C00",
+            "secondary": "#333333",
+            "accent": "#FF4500"
+        },
+        "font_family": "Kanit, sans-serif",
+        "style_note": "เน้นความสะอาด (Clean) ใช้สีขาวเป็นพื้นหลังหลัก และใช้สีส้มสำหรับปุ่ม Call-to-Action และส่วนเน้นความสำคัญ",
+        "inspiration": "overtopup.com, razergold.com"
+    },
+    "automated_tasks": {
+        "browser_test": {
+            "resolutions": [
+                "390x844",
+                "1440x900"
+            ],
+            "test_flows": [
+                "Select Game -> Choose Package -> Fill Player ID -> Go to Payment"
+            ]
+        },
+        "security_check": "Prevent IDOR on Order IDs, Sanitize Input IDs"
+    },
+    "deployment": {
+        "target": "Firebase Hosting",
+        "auto_deploy_on_agent_success": false
+    }
+}

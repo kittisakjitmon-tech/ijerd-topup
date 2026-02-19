@@ -1,4 +1,5 @@
 import { StrictMode } from 'react'
+// จุดเริ่มต้นหลักของแอปพลิเคชัน (Main Entry Point)
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'

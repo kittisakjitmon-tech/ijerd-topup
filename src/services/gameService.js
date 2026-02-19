@@ -1,8 +1,8 @@
-import { 
-  collection, 
-  query, 
-  where, 
-  orderBy, 
+import {
+  collection,
+  query,
+  where,
+  orderBy,
   getDocs,
   doc,
   getDoc,
@@ -13,33 +13,33 @@ import {
 import { db } from '../config/firebase';
 
 /**
- * Game schema:
- * - name: string
- * - imageUrl: string
- * - category: string
- * - active: boolean
- * - priority: number
+ * โครงสร้างข้อมูลเกม (Game schema):
+ * - name: string (ชื่อเกม)
+ * - imageUrl: string (ลิงก์รูปภาพ)
+ * - category: string (หมวดหมู่)
+ * - active: boolean (สถานะการใช้งาน)
+ * - priority: number (ลำดับความสำคัญ)
  */
 
 const GAMES_COLLECTION = 'games';
 
 /**
- * Fetches all active games ordered by priority
- * @returns {Promise<Array>} Array of game objects with id, name, imageUrl, category, active, priority
+ * ดึงข้อมูลเกมที่เปิดใช้งานอยู่ เรียงตามลำดับความสำคัญ
+ * @returns {Promise<Array>} อาร์เรย์ของวัตถุเกมที่มี id, name, imageUrl, category, active, priority
  */
 export const fetchActiveGames = async () => {
   try {
     const gamesRef = collection(db, GAMES_COLLECTION);
-    
-    // Query: active === true, ordered by priority (ascending)
+
+    // Query: active === true, เรียงตาม priority (น้อยไปมาก)
     const q = query(
       gamesRef,
       where('active', '==', true),
       orderBy('priority', 'asc')
     );
-    
+
     const querySnapshot = await getDocs(q);
-    
+
     const games = querySnapshot.docs.map(doc => ({
       id: doc.id,
       name: doc.data().name,
@@ -48,7 +48,7 @@ export const fetchActiveGames = async () => {
       active: doc.data().active,
       priority: doc.data().priority,
     }));
-    
+
     return games;
   } catch (error) {
     console.error('Error fetching active games:', error);
@@ -57,14 +57,14 @@ export const fetchActiveGames = async () => {
 };
 
 /**
- * Fetches all games (active and inactive)
- * @returns {Promise<Array>} Array of all game objects
+ * ดึงข้อมูลเกมทั้งหมด (ทั้งที่เปิดและปิดใช้งาน)
+ * @returns {Promise<Array>} อาร์เรย์ของวัตถุเกมทั้งหมด
  */
 export const fetchAllGames = async () => {
   try {
     const gamesRef = collection(db, GAMES_COLLECTION);
     const querySnapshot = await getDocs(gamesRef);
-    
+
     const games = querySnapshot.docs.map(doc => ({
       id: doc.id,
       name: doc.data().name,
@@ -73,7 +73,7 @@ export const fetchAllGames = async () => {
       active: doc.data().active,
       priority: doc.data().priority,
     }));
-    
+
     return games;
   } catch (error) {
     console.error('Error fetching all games:', error);
@@ -82,19 +82,19 @@ export const fetchAllGames = async () => {
 };
 
 /**
- * Fetches a single game by ID
- * @param {string} gameId - The document ID of the game
- * @returns {Promise<Object>} Game object or null if not found
+ * ดึงข้อมูลเกมตาม ID
+ * @param {string} gameId - รหัสเอกสารของเกม
+ * @returns {Promise<Object>} วัตถุเกม หรือ null หากไม่พบ
  */
 export const fetchGameById = async (gameId) => {
   try {
     const gameRef = doc(db, GAMES_COLLECTION, gameId);
     const gameSnap = await getDoc(gameRef);
-    
+
     if (!gameSnap.exists()) {
       return null;
     }
-    
+
     return {
       id: gameSnap.id,
       name: gameSnap.data().name,
@@ -110,9 +110,9 @@ export const fetchGameById = async (gameId) => {
 };
 
 /**
- * Fetches games by category
- * @param {string} category - The category to filter by
- * @returns {Promise<Array>} Array of game objects in the specified category
+ * ดึงข้อมูลเกมตามหมวดหมู่
+ * @param {string} category - หมวดหมู่ที่ต้องการกรอง
+ * @returns {Promise<Array>} อาร์เรย์ของวัตถุเกมในหมวดหมู่ที่ระบุ
  */
 export const fetchGamesByCategory = async (category) => {
   try {
@@ -123,9 +123,9 @@ export const fetchGamesByCategory = async (category) => {
       where('active', '==', true),
       orderBy('priority', 'asc')
     );
-    
+
     const querySnapshot = await getDocs(q);
-    
+
     const games = querySnapshot.docs.map(doc => ({
       id: doc.id,
       name: doc.data().name,
@@ -134,7 +134,7 @@ export const fetchGamesByCategory = async (category) => {
       active: doc.data().active,
       priority: doc.data().priority,
     }));
-    
+
     return games;
   } catch (error) {
     console.error('Error fetching games by category:', error);
@@ -143,24 +143,24 @@ export const fetchGamesByCategory = async (category) => {
 };
 
 /**
- * Creates a new game document
- * @param {Object} gameData - Game data object
- * @param {string} gameData.name - Game name
- * @param {string} gameData.imageUrl - Game image URL
- * @param {string} gameData.category - Game category
- * @param {boolean} gameData.active - Whether the game is active
- * @param {number} gameData.priority - Priority for ordering
- * @returns {Promise<string>} The ID of the newly created document
+ * สร้างเอกสารเกมใหม่
+ * @param {Object} gameData - ข้อมูลเกม
+ * @param {string} gameData.name - ชื่อเกม
+ * @param {string} gameData.imageUrl - ลิงก์รูปภาพ
+ * @param {string} gameData.category - หมวดหมู่
+ * @param {boolean} gameData.active - สถานะการใช้งาน
+ * @param {number} gameData.priority - ลำดับความสำคัญ
+ * @returns {Promise<string>} รหัสของเอกสารที่สร้างใหม่
  */
 export const createGame = async (gameData) => {
   try {
     const { name, imageUrl, category, active, priority } = gameData;
-    
-    // Validate required fields
+
+    // ตรวจสอบฟิลด์ที่จำเป็น
     if (!name || !imageUrl || !category) {
       throw new Error('Name, imageUrl, and category are required');
     }
-    
+
     const gamesRef = collection(db, GAMES_COLLECTION);
     const docRef = await addDoc(gamesRef, {
       name,
@@ -169,7 +169,7 @@ export const createGame = async (gameData) => {
       active: active !== undefined ? active : true,
       priority: priority !== undefined ? priority : 0,
     });
-    
+
     return docRef.id;
   } catch (error) {
     console.error('Error creating game:', error);
@@ -178,9 +178,9 @@ export const createGame = async (gameData) => {
 };
 
 /**
- * Updates an existing game document
- * @param {string} gameId - The document ID of the game to update
- * @param {Object} updates - Partial game data to update
+ * อัปเดตข้อมูลเกม
+ * @param {string} gameId - รหัสเอกสารของเกมที่จะอัปเดต
+ * @param {Object} updates - ข้อมูลบางส่วนที่จะอัปเดต
  * @returns {Promise<void>}
  */
 export const updateGame = async (gameId, updates) => {
@@ -194,8 +194,8 @@ export const updateGame = async (gameId, updates) => {
 };
 
 /**
- * Deletes a game document
- * @param {string} gameId - The document ID of the game to delete
+ * ลบข้อมูลเกม
+ * @param {string} gameId - รหัสเอกสารของเกมที่จะลบ
  * @returns {Promise<void>}
  */
 export const deleteGame = async (gameId) => {

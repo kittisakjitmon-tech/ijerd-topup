@@ -6,6 +6,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../config/firebase';
+import { getTransactions } from '../data/mockData';
 import { useAuth } from '../context/AuthContext';
 import { updateOrderStatus } from '../services/orderService';
 import { ADMIN_UID, isAdmin } from '../config/admin';
@@ -22,8 +23,8 @@ const STATUS_OPTIONS = [
 ];
 
 function formatDate(timestamp) {
-  if (!timestamp?.toDate) return '–';
-  const d = timestamp.toDate();
+  if (!timestamp) return '–';
+  const d = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
   return d.toLocaleDateString('th-TH', {
     day: '2-digit',
     month: '2-digit',
@@ -59,30 +60,45 @@ export default function AdminDashboard() {
   }, [user, isAdminUser, navigate]);
 
   useEffect(() => {
-    if (!isAdminUser) return;
-    setLoading(true);
-    setError(null);
-    const ordersRef = collection(db, ORDERS_COLLECTION);
-    const q = query(ordersRef, orderBy('timestamp', 'desc'));
-    const unsubscribe = onSnapshot(
-      q,
-      (snapshot) => {
-        const list = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-          timestamp: doc.data().timestamp,
-        }));
-        setOrders(list);
+    // if (!isAdminUser) return;
+    const fetchOrders = async () => {
+      try {
+        setLoading(true);
+        const data = await getTransactions();
+        setOrders(data);
         setError(null);
-        setLoading(false);
-      },
-      (err) => {
-        console.error('Orders snapshot error:', err);
-        setError(err.message || 'โหลด orders ไม่สำเร็จ');
+      } catch (err) {
+        setError('Failed to load orders');
+      } finally {
         setLoading(false);
       }
-    );
-    return () => unsubscribe();
+    };
+    fetchOrders();
+
+    // Firebase Logic Commented Out
+    // setLoading(true);
+    // setError(null);
+    // const ordersRef = collection(db, ORDERS_COLLECTION);
+    // const q = query(ordersRef, orderBy('timestamp', 'desc'));
+    // const unsubscribe = onSnapshot(
+    //   q,
+    //   (snapshot) => {
+    //     const list = snapshot.docs.map((doc) => ({
+    //       id: doc.id,
+    //       ...doc.data(),
+    //       timestamp: doc.data().timestamp,
+    //     }));
+    //     setOrders(list);
+    //     setError(null);
+    //     setLoading(false);
+    //   },
+    //   (err) => {
+    //     console.error('Orders snapshot error:', err);
+    //     setError(err.message || 'โหลด orders ไม่สำเร็จ');
+    //     setLoading(false);
+    //   }
+    // );
+    // return () => unsubscribe();
   }, [isAdminUser]);
 
   const filteredOrders = useMemo(() => {
@@ -98,7 +114,9 @@ export default function AdminDashboard() {
       const amount = Number(o.amount) || 0;
       const isPaidOrCompleted = o.status === 'paid' || o.status === 'completed';
       if (isPaidOrCompleted) grandTotal += amount;
-      if (isPaidOrCompleted && o.timestamp?.toDate && o.timestamp.toDate() >= todayStart) {
+
+      const orderDate = o.timestamp?.toDate ? o.timestamp.toDate() : new Date(o.timestamp);
+      if (isPaidOrCompleted && orderDate >= todayStart) {
         todayTotal += amount;
       }
     });
@@ -216,10 +234,10 @@ export default function AdminDashboard() {
                           {order.orderId || order.id}
                         </td>
                         <td className="px-4 py-3 text-sm text-gray-700">
-                          {order.userId ? `${order.userId.slice(0, 8)}…` : '–'}
+                          {order.username || (order.userId ? `${order.userId.slice(0, 8)}…` : '–')}
                         </td>
                         <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                          {order.gameName || '–'}
+                          {order.game || order.gameName || '–'}
                         </td>
                         <td className="px-4 py-3 text-sm text-right font-semibold text-[#F97316]">
                           ฿{Number(order.amount || 0).toFixed(0)}
@@ -232,13 +250,12 @@ export default function AdminDashboard() {
                         </td>
                         <td className="px-4 py-3 text-center">
                           <span
-                            className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
-                              status === 'completed'
-                                ? 'bg-green-100 text-green-800'
-                                : status === 'paid'
-                                  ? 'bg-blue-100 text-blue-800'
-                                  : 'bg-amber-100 text-amber-800'
-                            }`}
+                            className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${status === 'completed'
+                              ? 'bg-green-100 text-green-800'
+                              : status === 'paid'
+                                ? 'bg-blue-100 text-blue-800'
+                                : 'bg-amber-100 text-amber-800'
+                              }`}
                           >
                             {status === 'completed' ? 'เติมแล้ว' : status === 'paid' ? 'ชำระแล้ว' : 'รอเติม'}
                           </span>

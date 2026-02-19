@@ -16,6 +16,7 @@
     },
     "agent_settings": {
         "language": "Thai",
+        "instruction": "ตอบกลับเป็นภาษาไทยทุกครั้ง และอธิบายโค้ดเป็นภาษาไทยเท่านั้น",
         "response_style": "Professional and helpful in Thai language",
         "persona": "Expert Full-Stack Developer & UX Designer for E-sports",
         "coding_style": "Functional, Clean Code, Mobile-First, DRY",

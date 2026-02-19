@@ -1,11 +1,36 @@
-import { useGames } from '../hooks/useGames';
+import { useState, useEffect } from 'react';
+import { getGames, getPromotions } from '../data/mockData';
+// import { useGames } from '../hooks/useGames';
 import GameCard from '../components/GameCard';
 import Navbar from '../components/Navbar';
 import HeroSection from '../components/HeroSection';
 import Footer from '../components/Footer';
 
 const LandingPage = () => {
-  const { games, loading, error } = useGames();
+  // const { games, loading, error } = useGames();
+  const [games, setGames] = useState([]);
+  const [promotions, setPromotions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [gamesData, promotionsData] = await Promise.all([
+          getGames(),
+          getPromotions()
+        ]);
+        setGames(gamesData);
+        setPromotions(promotionsData);
+      } catch (err) {
+        setError('Failed to load data');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
 
   return (
     <div className="min-h-screen bg-white">
@@ -24,9 +49,9 @@ const LandingPage = () => {
           </div>
 
           {loading && (
-            <div className="text-center py-20">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-primary" />
-              <p className="mt-4 text-gray-500 font-medium animate-pulse">กำลังโหลดข้อมูลเกม...</p>
+            <div className="text-center py-20 flex flex-col items-center justify-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-[#F97316]" />
+              <p className="mt-4 text-[#F97316] font-medium animate-pulse">กำลังโหลดข้อมูลเกม...</p>
             </div>
           )}
 
@@ -35,9 +60,6 @@ const LandingPage = () => {
               <div className="text-red-500 text-5xl mb-4">⚠️</div>
               <h3 className="text-red-700 font-bold text-xl mb-2">เกิดข้อผิดพลาดในการโหลดข้อมูล</h3>
               <p className="text-red-600 mb-4">{error}</p>
-              <p className="text-gray-500 text-sm">
-                กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตของท่าน หรือติดต่อผู้ดูแลระบบ
-              </p>
             </div>
           )}
 
@@ -45,9 +67,6 @@ const LandingPage = () => {
             <div className="text-center py-20 bg-gray-50 rounded-2xl border border-dashed border-gray-300">
               <div className="text-gray-300 text-6xl mb-4">🎮</div>
               <p className="text-gray-500 text-xl font-medium mb-2">ยังไม่มีรายการเกมในขณะนี้</p>
-              <p className="text-gray-400">
-                โปรดติดตามการอัปเดตเร็วๆ นี้
-              </p>
             </div>
           )}
 
@@ -62,13 +81,36 @@ const LandingPage = () => {
       </section>
 
       <section id="promotions" className="py-12 px-4 md:px-8 bg-gray-50 scroll-mt-20">
-        <div className="max-w-7xl mx-auto text-center">
-          <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
-            โปรโมชั่น
-          </h3>
-          <p className="text-gray-600 max-w-xl mx-auto">
-            ติดตามโปรโมชั่นและส่วนลดได้ที่ Facebook และ Line ของเรา
-          </p>
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-8">
+            <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+              โปรโมชั่น <span className="text-[#F97316]">✨</span>
+            </h3>
+            <p className="text-gray-600 max-w-xl mx-auto">
+              สิทธิพิเศษและส่วนลดมากมายสำหรับสมาชิก
+            </p>
+          </div>
+
+          {!loading && promotions.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {promotions.map((promo) => (
+                <a key={promo.id} href={promo.link} className="block group overflow-hidden rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+                  <div className="relative h-48 md:h-64 overflow-hidden">
+                    <img
+                      src={promo.image}
+                      alt={promo.title}
+                      className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
+                      <p className="text-white font-bold text-lg md:text-xl drop-shadow-md">{promo.title}</p>
+                    </div>
+                  </div>
+                </a>
+              ))}
+            </div>
+          ) : (
+            <p className="text-center text-gray-500">ติดตามโปรโมชั่นเร็วๆ นี้</p>
+          )}
         </div>
       </section>
 
